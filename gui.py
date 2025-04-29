@@ -12,7 +12,7 @@ class ExpenseTrackerApp:
         self.root.title("Expense Tracker")
         self.root.geometry("800x600")
         self.root.configure(bg=BG_COLOR)
-        self.root.resizable(True, True)
+        self.root.resizable(False, False)
         
         # Configure styles
         configure_styles()
@@ -137,12 +137,7 @@ class ExpenseTrackerApp:
     
     def get_inputs(self):
         """Return all input values as a dictionary"""
-        return {
-            "date": self.date_entry.get().strip(),
-            "category": self.category_combobox.get().strip(),
-            "amount": self.amount_entry.get().strip(),
-            "description": self.desc_entry.get("1.0", tk.END).strip()
-        }
+        return {"date": self.date_entry.get().strip(),"category": self.category_combobox.get().strip(),"amount": self.amount_entry.get().strip(),"description": self.desc_entry.get("1.0", tk.END).strip()}
     
     def clear_inputs(self):
         """Clear all input fields"""
@@ -168,8 +163,7 @@ class ExpenseTrackerApp:
             self.tree.insert("", tk.END, values=exp.to_list(), tags=(tag,))
         
         # Add total row
-        self.tree.insert("", tk.END, values=["", "TOTAL", f"₹{total:.2f}", ""], 
-                       tags=('total',))
+        self.tree.insert("", tk.END, values=["", "TOTAL", f"₹{total:.2f}", ""], tags=('total',))
     
     def on_table_select(self, event):
         """Handle table selection event"""
@@ -199,12 +193,7 @@ class ExpenseTrackerApp:
                 raise ValueError("Invalid amount. Must be a positive number")
             
             # Create and add expense
-            expense = Expense(
-                inputs["date"],
-                inputs["category"],
-                float(inputs["amount"]),
-                inputs["description"]
-            )
+            expense = Expense(inputs["date"],inputs["category"],float(inputs["amount"]),inputs["description"])
             
             add_expense_to_file(expense)
             self.clear_inputs()
@@ -228,15 +217,10 @@ class ExpenseTrackerApp:
         if messagebox.askyesno("Confirm", "Delete selected expense?", icon='warning'):
             # Read all expenses, exclude the selected one, and rewrite the file
             expenses = read_expenses_from_file()
-            updated_expenses = [
-                exp for exp in expenses 
-                if not (
-                    exp.date == values[0] and 
-                    exp.category == values[1] and 
-                    f"₹{exp.amount:.2f}" == values[2] and 
-                    exp.description == values[3]
-                )
-            ]
+            updated_expenses = []
+            for exp in expenses:
+                if not (exp.date == values[0] and exp.category == values[1]  and f"₹{exp.amount:.2f}" == values[2] and exp.description == values[3]):
+                    updated_expenses.append(exp)
             
             # Clear and rewrite file
             clear_all_expenses()
@@ -246,7 +230,8 @@ class ExpenseTrackerApp:
             self.refresh_table()
     
     def clear_all(self):
-        """Clear all expenses"""
         if messagebox.askyesno("Confirm", "Delete ALL expenses? This cannot be undone!", icon='warning'):
+            # //remove all from files
             clear_all_expenses()
+            # refreshes the table after this
             self.refresh_table()
